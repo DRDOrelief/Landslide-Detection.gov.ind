@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Locations</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="locationsContainer">
+        <h1>Location Updates</h1>
+        <table id="locationsTable">
+            <tr>
+                <th>Location</th>
+                <th>Status</th>
+            </tr>
+            <tr onclick="goToIndex('safe')">
+                <td>Home TERRAPULSE-1w8</td>
+                <td>No Changes Detected</td>
+            </tr>
+            <tr onclick="goToIndex('futureDisaster')">
+                <td>Kinner Kailash SDF-900 GeoPULSE</td>
+                <td>Some Change Detected!</td>
+            </tr>
+        </table>
+        <button onclick="goToIndex('safe')">Back</button>
+    </div>
+
+    <script>
+        function goToIndex(state) {
+            window.location.href = "index.html?state=" + state;
+        }
+    </script>
+</body>
+</html>

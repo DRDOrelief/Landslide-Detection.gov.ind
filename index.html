@@ -1,34 +1,50 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Locations</title>
+    <title>Landslide Detection</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div id="locationsContainer">
-        <h1>Location Updates</h1>
-        <table id="locationsTable">
-            <tr>
-                <th>Location</th>
-                <th>Status</th>
-            </tr>
-            <tr onclick="goToIndex('safe')">
-                <td>Home TERRAPULSE-1w8</td>
-                <td>No Changes Detected</td>
-            </tr>
-            <tr onclick="goToIndex('futureDisaster')">
-                <td>Kinner Kailash SDF-900 GeoPULSE</td>
-                <td>Some Change Detected!</td>
-            </tr>
-        </table>
-        <button onclick="goToIndex('safe')">Back</button>
+    <div id="indexContainer">
+        <h1>Landslide Detection System</h1>
+        <p>Enter CAPTCHA to access dashboard: <strong>"ZX=91wiP"</strong></p>
+
+        <form id="captchaForm" onsubmit="return checkCaptcha()">
+            <input type="password" id="captchaInput" placeholder="Enter CAPTCHA" required>
+            <button type="submit">Submit</button>
+        </form>
+
+        <div id="message"></div>
+        <p id="captchaHint" style="margin-top:10px; font-size:0.9em; color:#ccc;"></p>
     </div>
 
     <script>
-        function goToIndex(state) {
-            window.location.href = "index.html?state=" + state;
+        const params = new URLSearchParams(window.location.search);
+        const state = params.get('state'); // safe, futureDisaster, currentDisaster
+
+        // CAPTCHAs
+        const secretInput1 = "ZX=9321P"; // Future disaster
+        const secretInput2 = "ZX=8128P"; // Current disaster
+        const realCaptcha = "ZX=91wiP";  // Safe access
+
+        function checkCaptcha() {
+            const input = document.getElementById("captchaInput").value.trim();
+            let targetState = "safe";
+
+            if(input === secretInput1) targetState = "futureDisaster";
+            else if(input === secretInput2) targetState = "currentDisaster";
+            else if(input === realCaptcha) targetState = "safe";
+            else {
+                document.getElementById("message").textContent = "Incorrect CAPTCHA!";
+                return false;
+            }
+
+            window.location.href = "dashboard.html?state=" + targetState;
+            return false;
         }
+
+        
     </script>
 </body>
 </html>
