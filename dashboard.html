@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Landslide Detection Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <!-- ALERT OVERLAY -->
+    <div id="alertOverlay">
+        <div id="alertSign">!</div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div id="dashboard" class="green page">
+        <div id="status">All clear - No signs of natural calamity</div>
+
+        <!-- Dashboard Panels -->
+        <div id="dashboardPanels" class="panel-container">
+            <div class="panel">
+                <h3>Landslide Risk</h3>
+                <p id="landslide">Low</p>
+            </div>
+            <div class="panel">
+                <h3>Soil Moisture</h3>
+                <p id="moisture">25%</p>
+            </div>
+            <div class="panel">
+                <h3>Rainfall</h3>
+                <p id="rainfall">5mm</p>
+            </div>
+            <div class="panel">
+                <h3>Highway Status</h3>
+                <p id="highway">Usable</p>
+            </div>
+            <div class="panel">
+                <h3>Seismograph (vibration)</h3>
+                <p id="seismograph">0.00</p>
+            </div>
+        </div>
+
+        <button onclick="goToLocation()">Update Locations</button>
+
+        <!-- Graph-based Seismograph -->
+        <div class="chartWrapper">
+            <canvas id="seismographChart"></canvas>
+        </div>
+    </div>
+
+    <script>
+        // ---------------- Dashboard state ----------------
+        const params = new URLSearchParams(window.location.search);
+        const state = params.get('state'); // safe, futureDisaster, currentDisaster
+
+        const dashboard = document.getElementById("dashboard");
+        const status = document.getElementById("status");
+        const landslide = document.getElementById("landslide");
+        const moisture = document.getElementById("moisture");
+        const rainfall = document.getElementById("rainfall");
+        const highway = document.getElementById("highway");
+        const seismograph = document.getElementById("seismograph");
+        const overlay = document.getElementById("alertOverlay");
+        const dashboardPanels = document.getElementById("dashboardPanels");
+        const seismographChartCanvas = document.getElementById('seismographChart');
+
+        // Show dashboard after alert animation
+        function showDashboard() {
+            overlay.style.opacity = 0;
+            overlay.style.pointerEvents = "none";
+            dashboardPanels.style.opacity = 1;
+        }
+
+        // Set dashboard values based on state
+        function setDashboardValues() {
+            if(state === "safe") {
+                dashboard.className = "green page";
+                status.textContent = "All clear - No signs of natural calamity";
+                landslide.textContent = "Low";
+                moisture.textContent = "25%";
+                rainfall.textContent = "5mm";
+                highway.textContent = "Usable";
+                overlay.style.opacity = 0;
+                dashboardPanels.style.opacity = 1;
+            } 
+            else if(state === "futureDisaster") {
+                dashboard.className = "red page";
+                status.textContent = "ALERT! Disaster about to occur! ALL CIVILIANS OF RECKONG PEO ARE REQUESTED TO TAKE PRECAUTION AND ALL THE VEHICLES ARE REQUESTED TO DIVERT TO AN ANOTHER ROUTE"
+                ;
+                landslide.textContent = "High";
+                moisture.textContent = "70%";
+                rainfall.textContent = "80mm";
+                highway.textContent = "Unusable / Caution";
+                overlay.style.opacity = 1;
+                overlay.style.pointerEvents = "all";
+                setTimeout(showDashboard, 1200);
+            } 
+            else if(state === "currentDisaster") {
+                dashboard.className = "black page";
+                status.textContent = "DISASTER! Landslide has occurred! ALL CIVILIANS OF RECKONG PEO ARE REQUESTED TO EVACUATE AND ALL THE VEHICLES ARE REQUESTED TO DIVERT TO AN ANOTHER ROUTE";
+                landslide.textContent = "Very High";
+                moisture.textContent = "95%";
+                rainfall.textContent = "150mm";
+                highway.textContent = "Unusable";
+                overlay.style.opacity = 1;
+                overlay.style.pointerEvents = "all";
+                setTimeout(showDashboard, 1200);
+            }
+        }
+        setDashboardValues();
+
+        // ---------------- Number-based Seismograph ----------------
+        function updateSeismoNumber() {
+            let value = 0;
+            if (state === "safe") return 0;
+            else if(state === "futureDisaster") value = (0.3 + Math.random() * 0.2).toFixed(2);
+            else if(state === "currentDisaster") value = (0.8 + Math.random() * 0.5).toFixed(2);
+
+            seismograph.textContent = value;
+
+            if(value >= 0.8) seismograph.style.animation = "pulse 0.5s infinite";
+            else seismograph.style.animation = "none";
+        }
+        setInterval(updateSeismoNumber, 1000);
+        updateSeismoNumber();
+
+        // ---------------- Graph-based Seismograph ----------------
+        const ctx = seismographChartCanvas.getContext('2d');
+        const waveformData = Array(100).fill(0);
+
+        const seismoChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: Array(100).fill(''),
+                datasets: [{
+                    label: 'Vibration',
+                    data: waveformData,
+                    borderColor: 'lime',
+                    backgroundColor: 'rgba(0,255,0,0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.3,
+                    pointRadius: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { min: 0, max: 2 },
+                    x: { display: false }
+                }
+            }
+        });
+
+        function getSeismoValue() {
+            if (state === "safe") return 0;
+            if(state === "futureDisaster") return (0.2 + Math.random() * 0.5).toFixed(2);
+            if(state === "currentDisaster") return (0.8 + Math.random() * 1.2).toFixed(2);
+        }
+
+        function updateSeismoGraph() {
+            const value = getSeismoValue();
+
+            seismoChart.data.datasets[0].data.shift();
+            seismoChart.data.datasets[0].data.push(value);
+
+            if(state === "safe") {
+                seismoChart.data.datasets[0].borderColor = "lime";
+                seismoChart.data.datasets[0].backgroundColor = "rgba(0,255,0,0.1)";
+                seismographChartCanvas.style.transform = 'translate(0,0)';
+            }
+            else if(state === "futureDisaster") {
+                seismoChart.data.datasets[0].borderColor = "orange";
+                seismoChart.data.datasets[0].backgroundColor = "rgba(255,165,0,0.1)";
+                seismographChartCanvas.style.transform = `translate(${Math.random()*1.5}px, ${Math.random()*1.5}px)`;
+            }
+            else if(state === "currentDisaster") {
+                seismoChart.data.datasets[0].borderColor = "red";
+                seismoChart.data.datasets[0].backgroundColor = "rgba(255,0,0,0.1)";
+                seismographChartCanvas.style.transform = `translate(${Math.random()*3}px, ${Math.random()*3}px)`;
+            }
+
+            seismoChart.update();
+        }
+        setInterval(updateSeismoGraph, 200);
+
+        // ---------------- Navigation ----------------
+        function goToLocation() {
+            window.location.href = "locations.html";
+        }
+    </script>
+</body>
+</html>
